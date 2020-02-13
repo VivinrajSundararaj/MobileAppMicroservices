@@ -1,6 +1,7 @@
 package com.appsdev.app.api.users.service;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import org.modelmapper.ModelMapper;
@@ -14,9 +15,11 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.appsdev.app.api.users.data.AlbumsServiceClient;
 import com.appsdev.app.api.users.data.UserEntity;
 import com.appsdev.app.api.users.data.UsersRepository;
 import com.appsdev.app.api.users.shared.UserDto;
+import com.appsdev.app.api.users.ui.model.AlbumResponseModel;
 
 @Service
 public class UsersServiceImpl implements UsersService {
@@ -24,13 +27,16 @@ public class UsersServiceImpl implements UsersService {
 	UsersRepository usersRepository;
 	BCryptPasswordEncoder bCryptPasswordEncoder;
 	// RestTemplate restTemplate;
+	AlbumsServiceClient albumsServiceClient;
 
 	Logger logger = LoggerFactory.getLogger(this.getClass());
 
 	@Autowired
-	public UsersServiceImpl(UsersRepository usersRepository, BCryptPasswordEncoder bCryptPasswordEncoder) {
+	public UsersServiceImpl(UsersRepository usersRepository, BCryptPasswordEncoder bCryptPasswordEncoder,
+			AlbumsServiceClient albumsServiceClient) {
 		this.usersRepository = usersRepository;
 		this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+		this.albumsServiceClient = albumsServiceClient;
 	}
 
 	@Override
@@ -73,22 +79,31 @@ public class UsersServiceImpl implements UsersService {
 		return new ModelMapper().map(userEntity, UserDto.class);
 	}
 
-//	@Override
-//	public UserDto getUserByUserId(String userId) {
-//
-//		UserEntity userEntity = usersRepository.findByUserId(userId);
-//		if (userEntity == null)
-//			throw new UsernameNotFoundException("User not found");
-//
-//		UserDto userDto = new ModelMapper().map(userEntity, UserDto.class);
-//
-//		logger.info("Before calling albums Microservice");
-//		// List<AlbumResponseModel> albumsList = albumsServiceClient.getAlbums(userId);
-//		logger.info("After calling albums Microservice");
-//
-////		userDto.setAlbums(albumsList);
-//
-//		return userDto;
-//	}
+	@Override
+	public UserDto getUserByUserId(String userId) {
+
+		UserEntity userEntity = usersRepository.findByUserId(userId);
+		if (userEntity == null)
+			throw new UsernameNotFoundException("User not found");
+
+		UserDto userDto = new ModelMapper().map(userEntity, UserDto.class);
+		logger.info("Before calling albums Microservice");
+
+		List<AlbumResponseModel> albumsList = albumsServiceClient.getAlbums(userId);
+
+//		List<AlbumResponseModel> albumsList = null;
+//		try {
+//			albumsList = albumsServiceClient.getAlbums(userId);
+//		} catch (FeignException e) {
+//			// TODO Auto-generated catch block
+//			logger.debug(e.getLocalizedMessage());
+//		}
+
+		logger.info("After calling albums Microservice");
+
+		userDto.setAlbums(albumsList);
+
+		return userDto;
+	}
 
 }

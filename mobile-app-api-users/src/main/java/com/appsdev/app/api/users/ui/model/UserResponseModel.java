@@ -1,11 +1,14 @@
 package com.appsdev.app.api.users.ui.model;
 
+import java.util.List;
+
 public class UserResponseModel {
 
 	private String userId;
 	private String firstName;
 	private String lastName;
 	private String email;
+	private List<AlbumResponseModel> albums;
 
 	public String getUserId() {
 		return userId;
@@ -37,6 +40,14 @@ public class UserResponseModel {
 
 	public void setEmail(String email) {
 		this.email = email;
+	}
+
+	public List<AlbumResponseModel> getAlbums() {
+		return albums;
+	}
+
+	public void setAlbums(List<AlbumResponseModel> albums) {
+		this.albums = albums;
 	}
 
 }
